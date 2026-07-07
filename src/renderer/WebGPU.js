@@ -7,7 +7,7 @@ export class WebGPU {
         this.device = null;
         this.context = null;
         this.format = null;
-        this.pipeline = null;
+        this.clothPipeline = null;
         this.vertexBuffer = null;
         this.vertexCount = 0;
         this.linePipeline = null;
@@ -54,7 +54,7 @@ export class WebGPU {
         });
 
         // первый пайплайн
-        this.pipeline = this.device.createRenderPipeline({
+        this.clothPipeline = this.device.createRenderPipeline({
             layout: "auto",
 
             vertex: {
@@ -199,6 +199,8 @@ export class WebGPU {
     }
 
     createVerticesFromSimulation() {
+        this.calculateNormals();
+
         const vertices = [];
 
         const width = this.simulation.width;
@@ -222,22 +224,26 @@ export class WebGPU {
             ];
         }
 
-        function addVertex(point, color) {
+        // формат вершины: x y nx ny nz
+        function addVertex(point) {
             const [x, y] = project(point);
 
             vertices.push(
-                x, y,
-                color[0], color[1], color[2]
+                x,
+                y,
+                point.normal[0],
+                point.normal[1],
+                point.normal[2]
             );
         }
 
-        function addTriangle(p1, p2, p3, color) {
-            addVertex(p1, color);
-            addVertex(p2, color);
-            addVertex(p3, color);
+        function addTriangle(p1, p2, p3) {
+            addVertex(p1);
+            addVertex(p2);
+            addVertex(p3);
         }
 
-        const clothColor = [0.45, 0.45, 0.45];
+        //const clothColor = [0.45, 0.45, 0.45];
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -246,12 +252,51 @@ export class WebGPU {
                 const p01 = points[index(x, y + 1)];
                 const p11 = points[index(x + 1, y + 1)];
 
-                addTriangle(p00, p10, p11, clothColor);
-                addTriangle(p00, p11, p01, clothColor);
+                addTriangle(p00, p10, p11);
+                addTriangle(p00, p11, p01);
             }
         }
 
         return new Float32Array(vertices);
+    }
+
+    // расчет нормалей
+    calculateNormals() {
+        const points = this.simulation.points;
+
+        for (const point of points) {
+            point.normal = [0, 0, 0];
+        }
+
+        const width = this.simulation.width;
+        const height = this.simulation.height;
+
+        const index = (x, y) =>
+            y * (width + 1) + x;
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+
+                const p00 = points[index(x, y)];
+                const p10 = points[index(x + 1, y)];
+                const p01 = points[index(x, y + 1)];
+                const p11 = points[index(x + 1, y + 1)];
+
+                this.addTriangleNormal(p00, p10, p11);
+                this.addTriangleNormal(p00, p11, p01);
+            }
+        }
+
+        for (const point of points) {
+            const n = point.normal;
+            const len = Math.hypot(n[0], n[1], n[2]);
+
+            if (len > 0) {
+                n[0] /= len;
+                n[1] /= len;
+                n[2] /= len;
+            }
+        }
     }
 
     // функция генерации сетки
@@ -431,13 +476,6 @@ export class WebGPU {
         );
     }
 
-    /*    updateVertexBuffer() {
-            const vertices = this.createVerticesFromSimulation();
-    
-            this.vertexCount = vertices.length / 5;
-            this.device.queue.writeBuffer(this.vertexBuffer, 0, vertices);
-        }*/
-
     // обновление обоих буферов
     updateVertexBuffers() {
         const clothVertices = this.createVerticesFromSimulation();
@@ -473,6 +511,26 @@ export class WebGPU {
         );
     }
 
+    addTriangleNormal(p0, p1, p2) {
+        const ax = p1.position[0] - p0.position[0];
+        const ay = p1.position[1] - p0.position[1];
+        const az = p1.position[2] - p0.position[2];
+
+        const bx = p2.position[0] - p0.position[0];
+        const by = p2.position[1] - p0.position[1];
+        const bz = p2.position[2] - p0.position[2];
+
+        const nx = ay * bz - az * by;
+        const ny = az * bx - ax * bz;
+        const nz = ax * by - ay * bx;
+
+        for (const p of [p0, p1, p2]) {
+            p.normal[0] += nx;
+            p.normal[1] += ny;
+            p.normal[2] += nz;
+        }
+    }
+
     render() {
         this.updateVertexBuffers();
 
@@ -492,7 +550,7 @@ export class WebGPU {
         });
 
         // отрисовка ткани
-        renderPass.setPipeline(this.pipeline);
+        renderPass.setPipeline(this.clothPipeline);
         renderPass.setVertexBuffer(0, this.vertexBuffer);
         renderPass.draw(this.vertexCount);
 
