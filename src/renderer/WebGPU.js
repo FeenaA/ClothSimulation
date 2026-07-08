@@ -326,8 +326,8 @@ export class WebGPU {
             const [bx, by] = project(b);
 
             vertices.push(
-                ax, ay, 0.05, 0.05, 0.05,
-                bx, by, 0.05, 0.05, 0.05
+                ax, ay, 0.18, 0.18, 0.18,
+                bx, by, 0.18, 0.18, 0.18
             );
         }
 
