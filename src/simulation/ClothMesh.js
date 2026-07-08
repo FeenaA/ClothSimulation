@@ -1,9 +1,17 @@
+// Генератор статической сетки ткани
+// Использовался на раннем этапе разработки для проверки рендеринга
 export class ClothMesh {
     constructor(size = 1.2, segments = 10) {
+
+        // Размер сетки
         this.size = size;
+
+        // Количество разбиений по каждой оси
         this.segments = segments;
     }
 
+    // Создаёт треугольную сетку в виде списка вершин
+    // Формат вершины: position.xy + color.rgb
     generateVertices() {
         const vertices = [];
         const step = this.size / this.segments;
@@ -24,6 +32,7 @@ export class ClothMesh {
         return new Float32Array(vertices);
     }
 
+    // Создаёт набор линий для отображения каркаса сетки
     generateWireframeVertices() {
         const vertices = [];
         const step = this.size / this.segments;

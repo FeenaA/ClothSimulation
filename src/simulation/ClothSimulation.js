@@ -1,14 +1,20 @@
 export class ClothSimulation {
     constructor(width, height) {
+        // Размер сетки ткани
         this.width = width;
         this.height = height;
 
+        // Все вершины ткани
         this.points = [];
+
+        // Время симуляции
         this.time = 0;
 
+        // Координаты управляемой вершины
         this.driverX = Math.floor(width / 2);
         this.driverY = Math.floor(height / 2);
 
+        // Флаг включения гравитации
         this.gravityEnabled = false;
 
         for (let y = 0; y <= height; y++) {
@@ -27,10 +33,15 @@ export class ClothSimulation {
         }
     }
 
+    // Возвращает индекс вершины в одномерном массиве
     index(x, y) {
         return y * (this.width + 1) + x;
     }
 
+    // Выполняет один шаг симуляции:
+    // - интегрирует движение вершин;
+    // - обновляет управляемую вершину;
+    // - несколько раз применяет ограничения.
     update(deltaTime) {
         this.time += deltaTime;
 
@@ -47,6 +58,8 @@ export class ClothSimulation {
             const prevY = point.previousPosition[1];
             const prevZ = point.previousPosition[2];
 
+            // Интегрирование по Верле
+            // Скорость вычисляется как разность текущего и предыдущего положения
             const velocityX = (x - prevX) * 0.995;
             const velocityY = (y - prevY) * 0.995;
             const velocityZ = (z - prevZ) * 0.995;
@@ -57,11 +70,13 @@ export class ClothSimulation {
             point.position[1] = y + velocityY;
             point.position[2] = z + velocityZ;
 
+            // При включённой гравитации ускоряем вершину вниз по оси Z
             if (this.gravityEnabled) {
                 point.position[2] -= 8.0 * deltaTime * deltaTime;
             }
         }
 
+        // Перемещает центральную вершину по синусоиде
         this.updateDrivenPoint();
 
         for (let i = 0; i < 12; i++) {
@@ -88,6 +103,9 @@ export class ClothSimulation {
     }
 
     satisfyConstraints() {
+
+        // Корректирует положение двух соседних вершин,
+        // сохраняя исходную длину ребра
         const applyConstraint = (p1, p2, restLength) => {
             const dx = p2.position[0] - p1.position[0];
             const dy = p2.position[1] - p1.position[1];
@@ -115,6 +133,8 @@ export class ClothSimulation {
             }
         };
 
+
+        const diagonalLength = Math.sqrt(2);
         for (let y = 0; y <= this.height; y++) {
             for (let x = 0; x <= this.width; x++) {
                 const current = this.points[this.index(x, y)];
@@ -128,11 +148,11 @@ export class ClothSimulation {
                 }
 
                 if (x < this.width && y < this.height) {
-                    applyConstraint(current, this.points[this.index(x + 1, y + 1)], Math.sqrt(2));
+                    applyConstraint(current, this.points[this.index(x + 1, y + 1)], diagonalLength);
                 }
 
                 if (x > 0 && y < this.height) {
-                    applyConstraint(current, this.points[this.index(x - 1, y + 1)], Math.sqrt(2));
+                    applyConstraint(current, this.points[this.index(x - 1, y + 1)], diagonalLength);
                 }
             }
         }

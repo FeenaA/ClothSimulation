@@ -45,8 +45,6 @@ export class WebGPU {
         this.createVertexBuffer();
         this.createLineVertexBuffer();
         this.createMarkerVertexBuffer();
-
-        console.log("WebGPU initialized");
     }
 
     createPipeline() {
@@ -58,7 +56,7 @@ export class WebGPU {
             code: debugShaderCode,
         });
 
-        // первый пайплайн
+        // Пайплайн для отрисовки поверхности ткани с использованием освещения
         this.clothPipeline = this.device.createRenderPipeline({
             layout: "auto",
 
@@ -97,13 +95,9 @@ export class WebGPU {
             primitive: {
                 topology: "triangle-list",
             },
-
-            /*primitive: {
-               topology: "line-list",
-           },*/
         });
 
-        // второй пайплайн - для сетки
+        // Пайплайн для отображения каркаса ткани
         this.linePipeline = this.device.createRenderPipeline({
             layout: "auto",
 
@@ -144,7 +138,7 @@ export class WebGPU {
             },
         });
 
-        // пайплайн для маркеров
+        /// Пайплайн для отображения закреплённых и управляемой вершин
         this.markerPipeline = this.device.createRenderPipeline({
             layout: "auto",
 
@@ -191,10 +185,6 @@ export class WebGPU {
 
         this.vertexCount = vertices.length / 5;
 
-        console.log("simulation", this.simulation);
-        console.log("vertices", vertices);
-        console.log("vertexCount", vertices.length / 5);
-
         this.vertexBuffer = this.device.createBuffer({
             size: vertices.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
@@ -203,6 +193,8 @@ export class WebGPU {
         this.device.queue.writeBuffer(this.vertexBuffer, 0, vertices);
     }
 
+    // Формирует массив вершин поверхности ткани
+    // Формат вершины: position.xy + normal.xyz
     createVerticesFromSimulation() {
         this.calculateNormals();
 
@@ -248,8 +240,6 @@ export class WebGPU {
             addVertex(p3);
         }
 
-        //const clothColor = [0.45, 0.45, 0.45];
-
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const p00 = points[index(x, y)];
@@ -265,7 +255,8 @@ export class WebGPU {
         return new Float32Array(vertices);
     }
 
-    // расчет нормалей
+    // Вычисляет нормали вершин по текущему положению треугольников
+    // Нормали используются в шейдере для расчёта освещения
     calculateNormals() {
         const points = this.simulation.points;
 
@@ -304,7 +295,8 @@ export class WebGPU {
         }
     }
 
-    // функция генерации сетки
+    // Формирует линии каркаса ткани
+    // Формат вершины: position.xy + color.rgb
     createWireframeVertices() {
         const vertices = [];
 
@@ -361,7 +353,7 @@ export class WebGPU {
         return new Float32Array(vertices);
     }
 
-    // генерация маркеров
+    // Формирует маркеры закреплённых и управляемой вершин
     createMarkerVertices() {
         const vertices = [];
 
@@ -463,7 +455,7 @@ export class WebGPU {
         );
     }
 
-    // создать буфер маркеров
+    // Создает буфер маркеров
     createMarkerVertexBuffer() {
         const vertices = this.createMarkerVertices();
 
@@ -481,7 +473,7 @@ export class WebGPU {
         );
     }
 
-    // обновление обоих буферов
+    // Обновляет все динамические буферы после очередного шага симуляции
     updateVertexBuffers() {
         const clothVertices = this.createVerticesFromSimulation();
 
@@ -516,6 +508,7 @@ export class WebGPU {
         );
     }
 
+    // Добавляет вклад нормали одного треугольника в три его вершины
     addTriangleNormal(p0, p1, p2) {
         const ax = p1.position[0] - p0.position[0];
         const ay = p1.position[1] - p0.position[1];
