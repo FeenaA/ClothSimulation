@@ -4,66 +4,81 @@ A real-time cloth simulation implemented from scratch using WebGPU and JavaScrip
 
 ## About
 
-This project explores real-time cloth simulation using modern WebGPU rendering. The simulation is based on Verlet integration and distance constraints without relying on external physics engines.
+This project explores real-time cloth simulation using modern WebGPU rendering.
 
-The goal of the project is to better understand GPU rendering pipelines, cloth physics, and modern browser graphics APIs by implementing the core algorithms from scratch.
+The simulation is based on Verlet integration and distance constraints without using external physics engines. The goal was to implement the core algorithms manually and gain a deeper understanding of GPU rendering pipelines, cloth physics, and modern browser graphics APIs.
+
+## Demo
+
+The animation below demonstrates the cloth simulation. Gravity can be enabled during runtime, causing the cloth to deform while the driven center vertex continues its sinusoidal motion.
+
+![Cloth simulation demo](assets/cloth-demo.gif)
 
 ## Features
 
 - Cloth simulation based on Verlet integration
 - Distance constraint solver
 - Triangle mesh generation
+- Lambert lighting
 - Toggleable gravity
 - Pinned vertices
 - Driven control vertex
-- Debug visualization
+- Debug visualization with wireframe and vertex markers
 
 ## Algorithms
 
-- Verlet integration
-- Distance constraints
+- Verlet integration for particle movement
+- Position-based distance constraints for cloth behavior
 - Triangle mesh generation
+- Vertex normal calculation for lighting
 
 ## Technologies
 
 - JavaScript (ES6)
 - WebGPU API
-- WGSL
+- WGSL shaders
 - Vite
 
 ## Project Structure
 
 ```text
 src/
-├── renderer/      # WebGPU renderer
+├── renderer/      # WebGPU rendering pipeline
 │   └── WebGPU.js
 ├── shaders/       # WGSL shaders
-│   └── shader.wgsl
-├── simulation/    # Cloth simulation and mesh generation
-│   ├── ClothMesh.js
+│   ├── cloth.wgsl
+│   └── debug.wgsl
+├── simulation/    # Cloth simulation logic
 │   └── ClothSimulation.js
-└── main.js
+└── main.js        # Application entry point
 ```
 
 ## Running locally
 
+Install dependencies:
+
 ```bash
 npm install
+```
+
+Start development server:
+
+```bash
 npm run dev
 ```
 
-## Screenshot
+The application will be available at:
 
-> Screenshot will be added after the first stable release.
+http://localhost:5173/
 
 ## Planned Improvements
 
-- Surface shading
-- Lighting
+- Perspective camera
 - Mouse interaction
 - Wind simulation
 - Vertex picking
 - Cloth tearing
+- Compute shader implementation for physics simulation
 
 ## License
 
