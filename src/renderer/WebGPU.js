@@ -1,4 +1,5 @@
-import shaderCode from "../shaders/shader.wgsl?raw";
+import clothShaderCode from "../shaders/cloth.wgsl?raw";
+import debugShaderCode from "../shaders/debug.wgsl?raw";
 
 export class WebGPU {
     constructor(canvas, simulation) {
@@ -49,8 +50,12 @@ export class WebGPU {
     }
 
     createPipeline() {
-        const shaderModule = this.device.createShaderModule({
-            code: shaderCode,
+        const clothShaderModule = this.device.createShaderModule({
+            code: clothShaderCode,
+        });
+
+        const debugShaderModule = this.device.createShaderModule({
+            code: debugShaderCode,
         });
 
         // первый пайплайн
@@ -58,7 +63,7 @@ export class WebGPU {
             layout: "auto",
 
             vertex: {
-                module: shaderModule,
+                module: clothShaderModule,
                 entryPoint: "vs_main",
                 buffers: [
                     {
@@ -80,7 +85,7 @@ export class WebGPU {
             },
 
             fragment: {
-                module: shaderModule,
+                module: clothShaderModule,
                 entryPoint: "fs_main",
                 targets: [
                     {
@@ -103,7 +108,7 @@ export class WebGPU {
             layout: "auto",
 
             vertex: {
-                module: shaderModule,
+                module: debugShaderModule,
                 entryPoint: "vs_main",
                 buffers: [
                     {
@@ -125,7 +130,7 @@ export class WebGPU {
             },
 
             fragment: {
-                module: shaderModule,
+                module: debugShaderModule,
                 entryPoint: "fs_main",
                 targets: [
                     {
@@ -144,7 +149,7 @@ export class WebGPU {
             layout: "auto",
 
             vertex: {
-                module: shaderModule,
+                module: debugShaderModule,
                 entryPoint: "vs_main",
                 buffers: [
                     {
@@ -166,7 +171,7 @@ export class WebGPU {
             },
 
             fragment: {
-                module: shaderModule,
+                module: debugShaderModule,
                 entryPoint: "fs_main",
                 targets: [
                     {

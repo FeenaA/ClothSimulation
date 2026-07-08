@@ -38,7 +38,8 @@ src/
 ├── renderer/      # WebGPU renderer
 │   └── WebGPU.js
 ├── shaders/       # WGSL shaders
-│   └── shader.wgsl
+│   ├── cloth.wgsl
+│   └── debug.wgsl
 ├── simulation/    # Cloth simulation and mesh generation
 │   ├── ClothMesh.js
 │   └── ClothSimulation.js
