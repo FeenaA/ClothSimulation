@@ -35,6 +35,8 @@ export class WebGPU {
         this.context = this.canvas.getContext("webgpu");
         this.format = navigator.gpu.getPreferredCanvasFormat();
 
+        this.resizeCanvas();
+
         this.context.configure({
             device: this.device,
             format: this.format,
@@ -45,6 +47,21 @@ export class WebGPU {
         this.createVertexBuffer();
         this.createLineVertexBuffer();
         this.createMarkerVertexBuffer();
+    }
+
+    resizeCanvas() {
+        const devicePixelRatio = window.devicePixelRatio || 1;
+
+        const width = Math.floor(this.canvas.clientWidth * devicePixelRatio);
+        const height = Math.floor(this.canvas.clientHeight * devicePixelRatio);
+
+        if (
+            this.canvas.width !== width ||
+            this.canvas.height !== height
+        ) {
+            this.canvas.width = width;
+            this.canvas.height = height;
+        }
     }
 
     createPipeline() {
@@ -326,8 +343,8 @@ export class WebGPU {
             const [bx, by] = project(b);
 
             vertices.push(
-                ax, ay, 0.18, 0.18, 0.18,
-                bx, by, 0.18, 0.18, 0.18
+                ax, ay, 0.0, 0.0, 0.0,
+                bx, by, 0.0, 0.0, 0.0
             );
         }
 
